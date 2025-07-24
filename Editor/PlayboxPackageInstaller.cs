@@ -21,6 +21,10 @@ public class PackageInstaller
     public static async void DownloadFacebook()
     {
         await DownloadFileAsync(facebook_url,Path.Combine(Application.dataPath,"../DownloadFiles/FacebookSDK.zip"));
+    }
+    [MenuItem("Playbox/Download Firebase")]
+    public static async void DownloadFirebase()
+    {
         await DownloadFileAsync(firebase_url,Path.Combine(Application.dataPath,"../DownloadFiles/Firebase.zip"));
     }
     
@@ -83,7 +87,8 @@ public class PackageInstaller
             { "com.google.external-dependency-manager","1.2.186" },
             { "com.applovin.mediation.ads","8.3.1" },
             { "com.google.ads.mobile","10.3.0" },
-            { "com.unity.ads.ios-support", "1.0.0" }
+            { "com.unity.ads.ios-support", "1.0.0" },
+            { "playbox", "https://github.com/dreamsim-dev/PlayboxSdk.git#main" }
         };
 
         foreach (var item in packagesToAdd)
