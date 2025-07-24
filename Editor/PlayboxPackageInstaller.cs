@@ -119,6 +119,26 @@ public class PackageInstaller
         }
     }
 
+    [MenuItem("PlayboxInstaller/Upgrade PlayboxSDK")]
+    public static void PlayboxUpgrade()
+    {
+        var request = Client.Add("https://github.com/dreamsim-dev/PlayboxSdk.git#main");
+        
+        EditorApplication.update += Update;
+
+        void Update()
+        {
+            if (request.IsCompleted)
+            {
+                if (request.Status == StatusCode.Success)
+                {
+                    Debug.Log("Playbox SDK Upgraded");
+                }
+                EditorApplication.update -= Update;
+            }
+        }
+    }
+
     private static void AddPackagesToManifest()
     {
         if (!File.Exists(ManifestPath))
