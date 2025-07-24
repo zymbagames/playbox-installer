@@ -23,6 +23,19 @@ public class PackageInstaller
     {
         await DownloadFileAsync(facebook_url,Path.Combine(Application.dataPath,"../DownloadFiles/FacebookSDK.zip"));
     }
+    
+    [MenuItem("PlayboxInstaller/Fix Facebook Error")]
+    public static  void FixFacebookError()
+    {
+        AssetDatabase.Refresh();
+        AssetDatabase.ImportAsset("Assets", ImportAssetOptions.ImportRecursive);
+        AssetDatabase.Refresh();
+        
+        Client.Resolve();
+
+        EditorUtility.DisplayDialog("Reimport", "Reimport completed.", "OK");
+    }
+    
     [MenuItem("PlayboxInstaller/Download Firebase")]
     public static async void DownloadFirebase()
     {
