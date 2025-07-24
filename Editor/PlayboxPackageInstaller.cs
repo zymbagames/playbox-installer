@@ -15,13 +15,13 @@ public class PackageInstaller
     private static string ManifestPath => Path.Combine(Application.dataPath, "../Packages/manifest.json");
     
     private static string facebook_url = "https://lookaside.facebook.com/developers/resources/?id=FacebookSDK-current.zip";
-    
-    private static string file_directory => Path.Combine(Application.dataPath, "../DownloadFiles/FacebookSDK.zip");
+    private static string firebase_url = "https://firebase.google.com/download/unity?hl=ru";
     
     [MenuItem("Playbox/Download Facebook")]
     public static async void DownloadFacebook()
     {
-        await DownloadFileAsync(facebook_url,file_directory);
+        await DownloadFileAsync(facebook_url,Path.Combine(Application.dataPath,"../DownloadFiles/FacebookSDK.zip"));
+        await DownloadFileAsync(firebase_url,Path.Combine(Application.dataPath,"../DownloadFiles/Firebase.zip"));
     }
     
     [MenuItem("Playbox/Install Playbox Dependencies")]
@@ -34,21 +34,31 @@ public class PackageInstaller
     {
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
+            request.SetRequestHeader("User-Agent", "Mozilla/5.0 (UnityDownloader)");
+            
             request.downloadHandler = new DownloadHandlerFile(outputPath);
 
             var operation = request.SendWebRequest();
-
-            // Ждём завершения загрузки в асинхронном виде
+            
             while (!operation.isDone)
+            {
+                EditorUtility.DisplayProgressBar(
+                    "Download file",
+                    $"Download {Path.GetFileName(outputPath)}",
+                    request.downloadProgress
+                );
                 await Task.Yield();
-
+            }
+            
+            EditorUtility.ClearProgressBar();
+            
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Ошибка загрузки {url}: {request.error}");
+                Debug.LogError($"File loading error {url}: {request.error}");
                 return false;
             }
 
-            Debug.Log($"Файл загружен: {outputPath}");
+            Debug.Log($"File loaded : {outputPath}");
             return true;
         }
     }
@@ -72,7 +82,8 @@ public class PackageInstaller
             { "com.devtodev.sdk.analytics.google","https://github.com/devtodev-analytics/package_Google.git" },
             { "com.google.external-dependency-manager","1.2.186" },
             { "com.applovin.mediation.ads","8.3.1" },
-            { "com.google.ads.mobile","10.3.0" }
+            { "com.google.ads.mobile","10.3.0" },
+            { "com.unity.ads.ios-support", "1.0.0" }
         };
 
         foreach (var item in packagesToAdd)
