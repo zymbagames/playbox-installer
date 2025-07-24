@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -17,18 +18,18 @@ public class PackageInstaller
     private static string facebook_url = "https://lookaside.facebook.com/developers/resources/?id=FacebookSDK-current.zip";
     private static string firebase_url = "https://firebase.google.com/download/unity?hl=ru";
     
-    [MenuItem("Playbox/Download Facebook")]
+    [MenuItem("PlayboxInstaller/Download Facebook")]
     public static async void DownloadFacebook()
     {
         await DownloadFileAsync(facebook_url,Path.Combine(Application.dataPath,"../DownloadFiles/FacebookSDK.zip"));
     }
-    [MenuItem("Playbox/Download Firebase")]
+    [MenuItem("PlayboxInstaller/Download Firebase")]
     public static async void DownloadFirebase()
     {
         await DownloadFileAsync(firebase_url,Path.Combine(Application.dataPath,"../DownloadFiles/Firebase.zip"));
     }
     
-    [MenuItem("Playbox/Install Playbox Dependencies")]
+    [MenuItem("PlayboxInstaller/Install Playbox Dependencies")]
     public static void InstallPlayboxDependencies()
     {
         AddPackagesToManifest();
@@ -66,7 +67,45 @@ public class PackageInstaller
             return true;
         }
     }
-    
+
+    [MenuItem("PlayboxInstaller/Install PlayboxSDK")]
+    public static void InstallPlayboxSDK()
+    {
+        if (!IsFirebaseAvailable())
+        {
+            Debug.Log("Firebase is not installed");
+            Debug.Log("Please install the: Firebase.Analytics, Firebase.Crashlytics");
+            return;
+        }
+        
+        if (!IsFacebookAvailable())
+        {
+            Debug.Log("Facebook is not installed");
+            Debug.Log("Please install the: FaceboockSDK");
+            return;
+        }
+
+        var request = Client.Add("https://github.com/dreamsim-dev/PlayboxSdk.git#main");
+        
+        EditorApplication.update += Update;
+
+        void Update()
+        {
+            if (request.IsCompleted)
+            {
+                if (request.Status == StatusCode.Success)
+                {
+                    Debug.Log("Playbox SDK Installed");
+                }else if (request.Status == StatusCode.Failure)
+                {
+                    Debug.Log("Playbox SDK Installation failed");
+                }
+                
+                EditorApplication.update -= Update;
+            }
+        }
+    }
+
     private static void AddPackagesToManifest()
     {
         if (!File.Exists(ManifestPath))
@@ -87,8 +126,8 @@ public class PackageInstaller
             { "com.google.external-dependency-manager","1.2.186" },
             { "com.applovin.mediation.ads","8.3.1" },
             { "com.google.ads.mobile","10.3.0" },
-            { "com.unity.ads.ios-support", "1.0.0" },
-            { "playbox", "https://github.com/dreamsim-dev/PlayboxSdk.git#main" }
+            { "com.unity.ads.ios-support", "1.0.0" }
+            //{ "playbox", "https://github.com/dreamsim-dev/PlayboxSdk.git#main" }
         };
 
         foreach (var item in packagesToAdd)
@@ -166,6 +205,32 @@ public class PackageInstaller
         }
         
         return false;
+    }
+    
+    public static bool IsFirebaseAvailable()
+    {
+        try
+        {
+            var type = Type.GetType("Firebase.FirebaseApp, Firebase.App, Firebase.Crashlytics.Crashlytics, Firebase.Analytics.FirebaseAnalytics");
+            return type != null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    
+    public static bool IsFacebookAvailable()
+    {
+        try
+        {
+            var type = Type.GetType("Facebook.Unity.FB, Facebook.Unity");
+            return type != null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
